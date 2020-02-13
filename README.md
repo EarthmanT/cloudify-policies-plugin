@@ -14,11 +14,9 @@ If the policy fails, the policy action is executed in the form of a workflow, e.
 
 ** Upload the plugin
 
-`cfy plugins upload [WAGON PATH] -y [YAML PATH]`
+`cfy plugins upload https://github.com/EarthmanT/cloudify-policies-plugin/releases/download/0.1/cloudify_policies_plugin-0.1-py27-none-linux_x86_64-centos-Core.wgn -y https://github.com/EarthmanT/cloudify-policies-plugin/releases/download/0.1/plugin.yaml`
 
 ** Create the "policy manager"
-
-
 
 `cfy install examples/manage.yaml -b policy_manager`
 
