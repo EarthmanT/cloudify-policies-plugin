@@ -1,0 +1,111 @@
+plugins:
+
+  policies:
+    executor: central_deployment_agent
+    package_name: cloudify-policies-plugin
+    package_version: '0.1'
+    source: ''
+
+data_types:
+
+  cloudify.types.policies.File:
+    properties:
+      resource_path:
+        type: string
+        description: File relative to blueprint path. This file will be encoded in base64 and stored in the policy JSON.
+        required: false
+      target_path:
+        type: string
+        required: false
+      template_variables:
+        type: dict
+        required: false
+
+  cloudify.types.policies.Action:
+    properties:
+      deployment_id:
+        type: string
+        description: Defaults to the deployment ID of the policy.
+        default: ''
+      workflow_id:
+        type: string
+        description: The name of the workflow to execute on failure.
+        default: scale
+      parameters:
+        type: dict
+        description: Workflow parameters.
+        default: {}
+
+  cloudify.types.policies.Policy:
+    properties:
+      policy_manager_node_instance_id:
+        type: string
+        description: The name of the policy manager node in the policy manager deployment.
+        default: policy_manager
+      policy:
+        type: cloudify.types.policies.File
+        description: The path to a script contained in the blueprint that contains the policy logic.
+        required: true
+      execution_method:
+        type: string
+        description: The command used to execute the policy.
+        default: python
+      timeout:
+        type: integer
+        description: The maximum number of seconds that the script will be permitted to run before it exits with failure.
+        default: 1
+      frequency:
+        type: integer
+        description: The frequency in seconds that the policy should be executed.
+        default: 60
+      action:
+        type: cloudify.types.policies.Action
+        description: The name of the workflow to execute on failure.
+        required: true
+
+  cloudify.types.policies.SystemDeployment:
+    properties:
+      default_policies:
+        type: dict
+        description: A list of cloudify.types.policies.Policy to seed the policies list.
+        default: {}
+
+node_types:
+
+  cloudify.nodes.policies.SystemDeployment:
+    derived_from: cloudify.nodes.Root
+    properties:
+      resource_config:
+        type: cloudify.types.policies.SystemDeployment
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        start:
+          implementation: policies.cloudify_policies.tasks.initialize
+        stop:
+          implementation: policies.cloudify_policies.tasks.terminate
+
+  cloudify.nodes.policies.Policy:
+    derived_from: cloudify.nodes.Root
+    properties:
+      resource_config:
+        type: cloudify.types.policies.Policy
+        description: The file that contains the policy. Should be YAML or JSON.
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: policies.cloudify_policies.tasks.add_policy
+          inputs:
+            policy:
+              default: { get_property: [ SELF, resource_config ] }
+
+workflows:
+
+  check_policy:
+    mapping: policies.cloudify_policies.tasks.check_policy
+    parameters:
+      policy_manager_id:
+        type: string
+        description: The ID of the policy manager.
+      policy_id:
+        type: string
+        description: The ID of the policy manager.

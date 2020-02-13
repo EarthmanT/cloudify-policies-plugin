@@ -1,0 +1,23 @@
+tosca_definitions_version: cloudify_dsl_1_3
+
+imports:
+  - http://www.getcloudify.org/spec/cloudify/5.0.5/types.yaml
+  - plugin:cloudify-policies-plugin
+
+inputs:
+
+  policy_manager_id:
+    type: string
+
+  policy:
+    default:
+      resource_path: policies/check.sh
+
+node_templates:
+
+  new-policy:
+    type: cloudify.nodes.policies.Policy
+    properties:
+      resource_config:
+        policy_manager_node_instance_id: { get_input: policy_manager_id }
+        policy: { get_input: policy }
