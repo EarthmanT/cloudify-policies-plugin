@@ -61,3 +61,13 @@ Executions:
 
 ```
 
+At the end of the video, you will see that `scale` or action doesn't actually get executed. Some problem in the plugin I guess.
+
+## Changes
+
+I would actually have the user define a workflow in the blueprint that is the desired policy check, instead of a script in the policy.
+
+Then I would have the plugin call that workflow and poll it. If the workflow failed, we execute the policy action, and if not we just reschedule.
+
+There's a few other corners that I cut in the code that I would fix.
+
